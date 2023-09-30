@@ -48,6 +48,29 @@ public class SchemaGeneratorIntegrationTests
     }
 
     [Fact]
+    public void GenerateSchema_EnumWithoutMessage_ReturnSchema()
+    {
+        // Arrange & Act
+        var (schema, repository) = GenerateSchema(typeof(EnumWithoutMessage));
+
+        // Assert
+        schema = repository.Schemas[schema.Reference.Id];
+        Assert.Equal("object", schema.Type);
+        Assert.Equal(1, schema.Properties.Count);
+
+        var enumSchema = repository.Schemas[schema.Properties["enumValue"].Reference.Id];
+        Assert.Equal("string", enumSchema.Type);
+        Assert.Equal(5, enumSchema.Enum.Count);
+
+        var enumValues = enumSchema.Enum.Select(e => ((OpenApiString)e).Value).ToList();
+        Assert.Contains("NEG", enumValues);
+        Assert.Contains("NESTED_ENUM_UNSPECIFIED", enumValues);
+        Assert.Contains("FOO", enumValues);
+        Assert.Contains("BAR", enumValues);
+        Assert.Contains("BAZ", enumValues);
+    }
+
+    [Fact]
     public void GenerateSchema_BasicMessage_ReturnSchema()
     {
         // Arrange & Act
